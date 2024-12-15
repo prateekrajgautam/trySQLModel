@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+
+
+{% block content %}
+<div id="pycontainer" class="container">
+
+    
+<span>Enter SapID</span>
+<input id="sapid"></input>
+<button class="btn" onclick="showresult()">Submit</button>
+</div>
+<script>
+async function showresult(){
+    var sapid = grab("#sapid")[0].value;
+    log(sapid)
+    var url=`http://127.0.0.1:8001/ac/${sapid}`;
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+
+    for (var [key1,val1] of Object.entries(data)){
+        var name = key1;
+        showData(name,val1)
+    }
+    
+    function showData(name,data){
+        append(pycontainer,gen(div,`${name}group`,gen(h1,"",`${name} Info`)))
+    
+        append(`#${name}group`,gen(div,`${name}table`,"","table"))
+        for (const [key, value] of Object.entries(data)) {
+            if(key!="id"  && value!=undefined){
+            append(`#${name}table`,gen(p,`${name}group${key}`,"","row"))
+
+            append(`#${name}group${key}`,gen(span,"",key,"col")) 
+            append(`#${name}group${key}`,gen(span,"",value,"col")) 
+            }
+        }
+    }
+
+    var tablescss = `
+    .table{
+    padding:1px;
+
+        .row{
+        display:grid;
+        grid-template-columns:10em 1fr;
+        
+            .col{
+                text-transform: capitalize
+            }
+        }
+    }
+
+    `
+    loadscss(tablescss)
+    
+
+}
+
+
+</script>
+
+
+{% endblock %}
