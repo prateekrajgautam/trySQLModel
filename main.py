@@ -1,9 +1,12 @@
+import os
+import subprocess
 from sqlmodel import Session, select
 from db import engine, SQLModel
 from models import *
 from readexcel import readstudnts
 from readfacultycsv import readFaculty
 
+import pandas as pd
 import uvicorn
 from fastapi import FastAPI,Request,Response
 from fastapi.staticfiles import StaticFiles
@@ -11,7 +14,8 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi import HTTPException,Header
 
-
+from readResult import readResult
+PORT = 9001
 templates = Jinja2Templates(directory="./templates")
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -20,8 +24,11 @@ def createTable():
     pass
     
     
-
-  
+softdf = readResult("./SoftComputing Marks.xlsx")
+pydf = readResult("./Python Marks.xlsx")
+print(softdf)  
+print(pydf)
+# input("")
 
 
 
@@ -139,10 +146,32 @@ def getdetails(sapid:int):
     
     return dict(Student=S,Group=G,Team=G.students)    
 
+@app.get("/api/marks/{subject}/{sapid}")
+def getmarks(subject:str, sapid:int):
+    print(type(sapid))
+    
+    if "python" in subject.lower():
+        print("python")
+        df = pydf
+    if "soft" in subject.lower():
+        print("soft")
+        df = softdf
+    try:
+        row = df[df["Student Id"]==sapid]
+    # print(df["Student Id"])
+    except:
+        row={"not found"}
+    
+    print(subject,sapid)
+    return dict(res=row)
+
 
 
 if __name__ == "__main__":
     createTable()
     readData()
-    uvicorn.run("main:app", host='0.0.0.0',port=8001, reload=True)
+    # os.system(f"tailscale funnel {PORT}")
+    uvicorn.run("main:app", host='0.0.0.0',port=PORT, reload=True)
+    
+    
     
