@@ -5,7 +5,7 @@ from db import engine, SQLModel
 from models import *
 from readexcel import readstudnts
 from readfacultycsv import readFaculty
-
+from multiprocessing import Process
 
 
 import pandas as pd
@@ -26,8 +26,8 @@ origins = [
     "http://localhost:8001",
     "https://dell-i7.tail9f300.ts.net",
     "http://dell-i7.tail9f300.ts.net",
-    "*",
     "upessocs.github.io",
+    "*",
 ]
 
 app.add_middleware(
@@ -38,11 +38,38 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+import logging
+from logging.config import dictConfig
 
+
+PORT = 10000
+
+# Define logging configuration
+dictConfig({
+    "version": 1,
+    "formatters": {
+        "default": {
+            "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        }
+    },
+    "handlers": {
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": os.path.join(os.getcwd(), "log.txt"),
+            "formatter": "default",
+        },
+    },
+    "root": {
+        "level": "DEBUG",
+        "handlers": ["file"],
+    },
+})
 
 
 from readResult import readResult
-PORT = 80
+PORT = 8000
+
 templates = Jinja2Templates(directory="./templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 SQLModel.metadata.create_all(engine)
@@ -52,8 +79,8 @@ def createTable():
     
 softdf = readResult("./SoftComputing Marks.xlsx")
 pydf = readResult("./Python Marks.xlsx")
-print(softdf)  
-print(pydf)
+# print(softdf)  
+# print(pydf)
 # input("")
 
 
@@ -194,12 +221,22 @@ def getmarks(subject:str, sapid:int):
     return resp
 
 
+def startTailscaleFunnel():
+    subprocess.run(["tailscale", "funnel", f"{PORT}"])
 
+def startServer():
+    uvicorn.run("main:app", host='127.0.0.1',port=PORT, reload=True,log_config=None)    
+
+    
 if __name__ == "__main__":
-    # createTable()
+    logfile = os.path.join(os.path.dirname(os.getcwd()),"log.txt")
+    p1 = Process(target=startTailscaleFunnel)
+    p2 = Process(target=startServer)
     # readData()
-    # os.system(f"tailscale funnel {PORT}")
-    uvicorn.run("main:app", host='0.0.0.0',port=PORT, reload=True)
+    p1.start()
+    # p1.join()
+    p2.start()
+    # p2.join()
     
     
     
