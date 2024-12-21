@@ -6,6 +6,8 @@ from models import *
 from readexcel import readstudnts
 from readfacultycsv import readFaculty
 
+
+
 import pandas as pd
 import uvicorn
 from fastapi import FastAPI,Request,Response
@@ -14,10 +16,34 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi import HTTPException,Header
 
-from readResult import readResult
-PORT = 9001
-templates = Jinja2Templates(directory="./templates")
+
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI()
+
+origins = [
+    "http://localhost",
+    "http://localhost:8001",
+    "https://dell-i7.tail9f300.ts.net",
+    "http://dell-i7.tail9f300.ts.net",
+    "*",
+    "upessocs.github.io",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+
+
+from readResult import readResult
+PORT = 80
+templates = Jinja2Templates(directory="./templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 SQLModel.metadata.create_all(engine)
 def createTable():
@@ -163,13 +189,15 @@ def getmarks(subject:str, sapid:int):
         row={"not found"}
     
     print(subject,sapid)
-    return dict(res=row)
+    resp = row.to_dict(orient="records")[0]
+    print(resp)
+    return resp
 
 
 
 if __name__ == "__main__":
-    createTable()
-    readData()
+    # createTable()
+    # readData()
     # os.system(f"tailscale funnel {PORT}")
     uvicorn.run("main:app", host='0.0.0.0',port=PORT, reload=True)
     

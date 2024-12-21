@@ -1,8 +1,6 @@
 import pandas as pd
 from models import *
 
-filename = "./data.xlsx"
-dataDict = pd.read_excel(filename, engine="openpyxl",sheet_name=None)
 
 # print(dataDict)
 def readstudnts():
@@ -41,6 +39,9 @@ def readstudnts():
     return studentDataList,groups
     
 if __name__ == "__main__":
+    filename = "./data.xlsx"
+    dataDict = pd.read_excel(filename, engine="openpyxl",sheet_name=None)
+
     studentDataList = readstudnts()
 
 
