@@ -86,9 +86,9 @@ PORT = 8000
 
 templates = Jinja2Templates(directory="./templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
-SQLModel.metadata.create_all(engine)
-def createTable():
-    pass
+# SQLModel.metadata.create_all(engine)
+# def createTable():
+#     pass
     
     
 softdf = readResult("./SoftComputing Marks.xlsx")
@@ -227,13 +227,15 @@ def getmarks(subject:str, sapid:int):
         print("soft")
         df = softdf
     if "major" in subject.lower():
-        print("soft")
+        print("Major")
         df = majordf
     
     try:
         row = df[df["Student Id"]==sapid]
     # print(df["Student Id"])
     except:
+        row = df[df["SapID"]==sapid]
+    else:
         row={"not found"}
     
     print(subject,sapid)
