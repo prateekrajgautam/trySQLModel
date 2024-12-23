@@ -1,8 +1,8 @@
 import os
 import subprocess
-from sqlmodel import Session, select
-from db import engine, SQLModel
-from models import *
+# from sqlmodel import Session, select
+# from db import engine, SQLModel
+# from models import *
 from readexcel import readstudnts
 from readfacultycsv import readFaculty
 from multiprocessing import Process
@@ -41,6 +41,19 @@ app.add_middleware(
 import logging
 from logging.config import dictConfig
 
+# Create and configure logger
+logging.basicConfig(filename="newfile.log",
+                    format='%(asctime)s %(message)s',
+                    filemode='w')
+
+# Creating an object
+logger = logging.getLogger()
+
+# Setting the threshold of logger to DEBUG
+logger.setLevel(logging.DEBUG)
+
+# Test messages
+logger.debug("Harmless debug Message")
 
 PORT = 10000
 
@@ -68,6 +81,7 @@ dictConfig({
 
 
 from readResult import readResult
+from readAC import readAC
 PORT = 8000
 
 templates = Jinja2Templates(directory="./templates")
@@ -79,6 +93,8 @@ def createTable():
     
 softdf = readResult("./SoftComputing Marks.xlsx")
 pydf = readResult("./Python Marks.xlsx")
+
+majordf = readAC("./001 AC Summary SheetCCVT B4,5,6.xlsx")
 # print(softdf)  
 # print(pydf)
 # input("")
@@ -202,6 +218,7 @@ def getdetails(sapid:int):
 @app.get("/api/marks/{subject}/{sapid}")
 def getmarks(subject:str, sapid:int):
     print(type(sapid))
+    logger.debug(f"{subject} {sapid}")
     
     if "python" in subject.lower():
         print("python")
@@ -209,6 +226,10 @@ def getmarks(subject:str, sapid:int):
     if "soft" in subject.lower():
         print("soft")
         df = softdf
+    if "major" in subject.lower():
+        print("soft")
+        df = majordf
+    
     try:
         row = df[df["Student Id"]==sapid]
     # print(df["Student Id"])
